@@ -7,7 +7,8 @@ Install pip libraries:
 ```python
 pip install -r requirements.txt
 ```
-Move github-updater.py into your repositories folder.
+Move ```github-updater.py``` into your repositories folder.
+
 Run:
 ```python
 python github-updater.py
