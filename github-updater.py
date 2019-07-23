@@ -3,6 +3,7 @@ import json
 import git
 from github import Github
 import urllib.parse
+import getpass
 
 
 def main():
@@ -14,7 +15,7 @@ def main():
         print('Credentials loaded!')
     else:
         username = input('Insert username: ')
-        password = input('Insert password: ')
+        password = getpass.getpass('Insert password: ')
         if input('Do you want to save your credentials? [y/n] ').lower() == 'y':
             credentials = {'username': username, 'password': password}
             credentials_file = open('credentials.txt', 'w')
