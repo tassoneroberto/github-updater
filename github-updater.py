@@ -5,29 +5,32 @@ from github import Github
 import urllib.parse
 import getpass
 
-
 def main():
+    repo_path = os.path.abspath(os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), '..'))
+    credentials_file = os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), 'config.ini')
+    os.chdir(repo_path)
     print('Checking Github credentials...')
-    if os.path.isfile('credentials.txt'):
-        credentials = json.loads(open('credentials.txt', 'r').read())
+    if os.path.isfile(credentials_file):
+        credentials = json.loads(open(credentials_file, 'r').read())
         username = credentials['username']
         password = credentials['password']
         print('Credentials loaded!')
     else:
         username = input('Insert username: ')
         password = getpass.getpass('Insert password: ')
+        # TODO: check if credentials are correct
         if input('Do you want to save your credentials? [y/n] ').lower() == 'y':
             credentials = {'username': username, 'password': password}
-            credentials_file = open('credentials.txt', 'w')
+            credentials_file = open(credentials_file, 'w')
             credentials_file.write(json.dumps(credentials))
             credentials_file.close()
             print('Credentials saved!')
         else:
             print('Credentials not saved!')
     g = Github(username, password)
-    repo_path = os.path.abspath(os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), '..'))
-    os.chdir(repo_path)
+
     print('Repositories folder: '+repo_path)
     for repo in g.get_user().get_repos():
         if not os.path.isdir(repo.name):
