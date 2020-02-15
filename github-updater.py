@@ -32,7 +32,7 @@ def main():
     g = Github(username, password)
 
     print('Repositories folder: '+repo_path)
-    for repo in g.get_user().get_repos():
+    for repo in g.get_user().get_repos(affiliation='owner'):
         if not os.path.isdir(repo.name):
             print('Cloning ' + repo.name)
             git.Git(repo_path).clone('https://'+urllib.parse.quote(username)+':' +
