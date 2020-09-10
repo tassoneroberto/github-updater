@@ -1,47 +1,71 @@
-import os
-import json
+import configparser
+import copy
 import git
-from github import Github
-import urllib.parse
-import getpass
+import json
+import logging
+import os
+import requests
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('GithubUpdater')
+config = configparser.ConfigParser()
+
+REPOS_API_URL = 'https://api.github.com/user/repos'
 
 def main():
     repo_path = os.path.abspath(os.path.join(
         os.path.dirname(os.path.realpath(__file__)), '..'))
-    credentials_file = os.path.join(os.path.dirname(
+    config_file_path = os.path.join(os.path.dirname(
         os.path.realpath(__file__)), 'config.ini')
     os.chdir(repo_path)
-    print('Checking Github credentials...')
-    if os.path.isfile(credentials_file):
-        credentials = json.loads(open(credentials_file, 'r').read())
-        username = credentials['username']
-        password = credentials['password']
-        print('Credentials loaded!')
+    logger.info('Checking for Github access token...')
+    if os.path.isfile(config_file_path):
+        try:
+            config.read(config_file_path)
+        except configparser.MissingSectionHeaderError:
+            logger.error(
+                f"""Malformed configuration file: {config_file_path}. Please remove the file and run the script again.""")
+            return
+        token = config['auth']['token']
+        logger.info('Token loaded!')
     else:
-        username = input('Insert username: ')
-        password = getpass.getpass('Insert password: ')
-        # TODO: check if credentials are correct
-        if input('Do you want to save your credentials? [y/n] ').lower() == 'y':
-            credentials = {'username': username, 'password': password}
-            credentials_file = open(credentials_file, 'w')
-            credentials_file.write(json.dumps(credentials))
-            credentials_file.close()
-            print('Credentials saved!')
+        token = input('Insert token: ')
+        # TODO: check if token is correct
+        if input('Do you want to save the access token? [y/n] ').lower() == 'y':
+            config['auth'] = {'token': token}
+            with open(config_file_path, 'w') as configfile:
+                config.write(configfile)
+            logger.info('Access token saved!')
         else:
-            print('Credentials not saved!')
-    g = Github(username, password)
+            logger.info('Access token not saved!')
 
-    print('Repositories folder: '+repo_path)
-    for repo in g.get_user().get_repos(affiliation='owner'):
-        if not os.path.isdir(repo.name):
-            print('Cloning ' + repo.name)
-            git.Git(repo_path).clone('https://'+urllib.parse.quote(username)+':' +
-                                     urllib.parse.quote(password)+'@github.com/'+urllib.parse.quote(username)+'/'+repo.name)
+    logger.info('Repositories folder: ' + repo_path)
+
+    headers = {
+        'Authorization': f'token {token}',
+        'accept': 'application/vnd.github.v3+json'
+    }
+    params = {
+        'type': 'all',
+        'per_page':100}
+
+    # TODO: Loop over all the pages if repos are more than 100 (limit per page)
+    for repo in json.loads(requests.get(REPOS_API_URL, headers=headers, params=params).content):
+        repo_name = repo['name']
+        if not os.path.isdir(repo_path + "/" + repo_name):
+            logger.info('Cloning ' + repo_name)
+            try:
+                git.Repo.clone_from(repo['clone_url'], repo_path+"/"+repo_name)
+            except git.exc.GitCommandError:
+                logger.error(f'Error occurred cloning the repository: {repo_name}')
         else:
-            print('Pulling ' + repo.name)
-            repo = git.Repo(os.path.join(repo_path, repo.name))
-            o = repo.remotes.origin
-            o.pull()
+            logger.info('Pulling ' + repo_name)
+            try:
+                repo = git.Repo(os.path.join(repo_path, repo_name))
+                o = repo.remotes.origin
+                o.pull()
+            except git.exc.GitCommandError:
+                logger.error(f'Error occurred pulling the repository: {repo_name}')
 
 
 if __name__ == "__main__":
