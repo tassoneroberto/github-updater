@@ -22,7 +22,7 @@ Create a Github access token with repository permissions. More information here:
 Run the script and enter the token when required:
 
 ```python
-python github-updater.py
+python github_updater.py
 ```
 
 ### Note
