@@ -13,7 +13,7 @@ cd github-updater
 
 Install pip libraries:
 
-```python
+```bash
 python -m pip install -r requirements.txt
 ```
 
@@ -21,7 +21,7 @@ Create a Github access token with repository permissions. More information here:
 
 Run the script and enter the token when required:
 
-```python
+```bash
 python github_updater.py
 ```
 
