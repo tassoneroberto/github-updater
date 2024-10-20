@@ -34,8 +34,8 @@ def main():
         # TODO: check if token is correct
         if input('Do you want to save the access token? [y/n] ').lower() == 'y':
             config['auth'] = {'token': token}
-            with open(config_file_path, 'w') as configfile:
-                config.write(configfile)
+            with open(config_file_path, 'w') as config_file:
+                config.write(config_file)
             logger.info('Access token saved!')
         else:
             logger.info('Access token not saved!')

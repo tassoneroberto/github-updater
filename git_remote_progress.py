@@ -22,7 +22,7 @@ class GitRemoteProgress(git.RemoteProgress):
 
     def __init__(self) -> None:
         super().__init__()
-        self.progressbar_instace = progress.Progress(
+        self.progressbar_instance = progress.Progress(
             progress.SpinnerColumn(),
             # *progress.Progress.get_default_columns(),
             progress.TextColumn("[progress.description]{task.description}"),
@@ -35,12 +35,12 @@ class GitRemoteProgress(git.RemoteProgress):
             console=console.Console(),
             transient=False,
         )
-        self.progressbar = self.progressbar_instace.__enter__()
+        self.progressbar = self.progressbar_instance.__enter__()
         self.active_task = None
 
     def __del__(self) -> None:
         # logger.info("Destroying bar...")
-        self.progressbar_instace.__exit__(None, None, None)
+        self.progressbar_instance.__exit__(None, None, None)
 
     @classmethod
     def get_curr_op(cls, op_code: int) -> str:
