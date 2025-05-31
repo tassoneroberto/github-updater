@@ -59,9 +59,9 @@ def main():
             try:
                 git.Repo.clone_from(
                     repo['clone_url'], repo_path+"/"+repo_name, progress=GitRemoteProgress())
-            except git.exc.GitCommandError:
+            except git.exc.GitCommandError as e:
                 logger.error(
-                    f'Error occurred cloning the repository: {repo_name}'
+                    f'Error occurred cloning the repository: {repo_name}. Error: {e}'
                 )
         else:
             logger.info('Pulling ' + repo_name)
@@ -69,9 +69,9 @@ def main():
                 repo = git.Repo(os.path.join(repo_path, repo_name))
                 o = repo.remotes.origin
                 o.pull()
-            except git.exc.GitCommandError:
+            except git.exc.GitCommandError as e:
                 logger.error(
-                    f'Error occurred pulling the repository: {repo_name}'
+                    f'Error occurred pulling the repository: {repo_name}. Error: {e}'
                 )
 
 
